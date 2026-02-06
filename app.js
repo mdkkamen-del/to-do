@@ -1,5 +1,6 @@
 const form = document.querySelector("#task-form");
 const backlogList = document.querySelector("#backlog-list");
+const completedList = document.querySelector("#completed-list");
 const projectList = document.querySelector("#project-list");
 const matrixCells = document.querySelectorAll(".matrix-cell");
 
@@ -19,7 +20,12 @@ const loadTasks = () => {
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) {
       tasks.push(
-        ...parsed.filter((task) => task && typeof task.title === "string")
+        ...parsed
+          .filter((task) => task && typeof task.title === "string")
+          .map((task) => ({
+            ...task,
+            status: task.status || "none",
+          }))
       );
     }
   } catch (error) {
@@ -29,6 +35,16 @@ const loadTasks = () => {
 
 const matrixKey = (importance, urgency) => `${importance}-${urgency}`;
 
+const statusLabel = (status) => {
+  if (status === "in-progress") {
+    return "В работе";
+  }
+  if (status === "done") {
+    return "Готово";
+  }
+  return "Без статуса";
+};
+
 const renderTask = (task) => {
   const item = document.createElement("li");
   item.className = "task";
@@ -36,6 +52,7 @@ const renderTask = (task) => {
     <strong>${task.title}</strong>
     ${task.description ? `<span>${task.description}</span>` : ""}
     <small>Проект: ${task.project || "Без проекта"}</small>
+    <small>Статус: ${statusLabel(task.status)}</small>
     <small>Важность: ${task.importance === "high" ? "Высокая" : "Низкая"}</small>
     <small>Срочность: ${task.urgency === "high" ? "Срочная" : "Несрочная"}</small>
   `;
@@ -44,14 +61,16 @@ const renderTask = (task) => {
 
 const renderBacklog = () => {
   backlogList.innerHTML = "";
-  tasks.forEach((task) => backlogList.appendChild(renderTask(task)));
+  tasks
+    .filter((task) => task.status !== "done")
+    .forEach((task) => backlogList.appendChild(renderTask(task)));
 };
 
 const renderMatrix = () => {
   matrixCells.forEach((cell) => {
     cell.querySelector("ul").innerHTML = "";
   });
-  tasks.forEach((task) => {
+  tasks.filter((task) => task.status !== "done").forEach((task) => {
     const cell = document.querySelector(`[data-cell="${matrixKey(task.importance, task.urgency)}"] ul`);
     if (cell) {
       cell.appendChild(renderTask(task));
@@ -86,10 +105,18 @@ const renderProjects = () => {
   projectList.appendChild(grid);
 };
 
+const renderCompleted = () => {
+  completedList.innerHTML = "";
+  tasks
+    .filter((task) => task.status === "done")
+    .forEach((task) => completedList.appendChild(renderTask(task)));
+};
+
 const renderAll = () => {
   renderBacklog();
   renderMatrix();
   renderProjects();
+  renderCompleted();
 };
 
 form.addEventListener("submit", (event) => {
@@ -101,6 +128,7 @@ form.addEventListener("submit", (event) => {
     project: data.get("project").trim(),
     importance: data.get("importance"),
     urgency: data.get("urgency"),
+    status: data.get("status"),
   };
 
   if (!task.title) {

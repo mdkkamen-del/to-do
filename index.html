@@ -46,6 +46,14 @@
               <option value="low">Несрочная</option>
             </select>
           </label>
+          <label>
+            Статус
+            <select name="status">
+              <option value="none">Без статуса</option>
+              <option value="in-progress">В работе</option>
+              <option value="done">Готово</option>
+            </select>
+          </label>
           <button type="submit">Добавить</button>
         </form>
       </section>
@@ -84,6 +92,11 @@
       <section class="panel projects">
         <h2>Проекты</h2>
         <div id="project-list"></div>
+      </section>
+
+      <section class="panel completed">
+        <h2>Выполненные задачи</h2>
+        <ul id="completed-list"></ul>
       </section>
     </main>
 
