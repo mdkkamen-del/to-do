@@ -1,0 +1,17 @@
+{
+  "name": "todo-backlog-matrix",
+  "version": "1.0.0",
+  "description": "Small To-Do app with backlog, Eisenhower matrix, and project grouping.",
+  "private": true,
+  "scripts": {
+    "start": "http-server -p 8000",
+    "start:launcher": "node launcher.js",
+    "build:exe": "pkg launcher.js --targets node18-win-x64 --output todo-launcher.exe"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "open": "^10.1.0",
+    "pkg": "^5.8.1",
+    "serve-handler": "^6.1.5"
+  }
+}

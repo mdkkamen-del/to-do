@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>To-Do: Беклог, Эйзенхауэр, Проекты</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>To-Do менеджер</h1>
+      <p>Беклог, матрица Эйзенхауэра и проекты — в одном месте.</p>
+    </header>
+
+    <main>
+      <section class="panel create">
+        <h2>Добавить задачу</h2>
+        <form id="task-form">
+          <label>
+            Название
+            <input type="text" name="title" placeholder="Например, подготовить презентацию" required />
+          </label>
+          <label>
+            Описание
+            <input
+              type="text"
+              name="description"
+              placeholder="Коротко опишите задачу"
+            />
+          </label>
+          <label>
+            Проект
+            <input type="text" name="project" placeholder="Например, Маркетинг" />
+          </label>
+          <label>
+            Важность
+            <select name="importance">
+              <option value="high">Высокая</option>
+              <option value="low">Низкая</option>
+            </select>
+          </label>
+          <label>
+            Срочность
+            <select name="urgency">
+              <option value="high">Срочная</option>
+              <option value="low">Несрочная</option>
+            </select>
+          </label>
+          <label>
+            Статус
+            <select name="status">
+              <option value="none">Без статуса</option>
+              <option value="in-progress">В работе</option>
+              <option value="done">Готово</option>
+            </select>
+          </label>
+          <button type="submit">Добавить</button>
+        </form>
+      </section>
+
+      <section class="panel backlog">
+        <h2>Общий беклог</h2>
+        <ul id="backlog-list"></ul>
+      </section>
+
+      <section class="panel matrix">
+        <h2>Матрица Эйзенхауэра</h2>
+        <div class="matrix-axes">
+          <span class="axis-label axis-y">Важность ↑</span>
+          <span class="axis-label axis-x">Срочность →</span>
+          <div class="matrix-grid">
+            <div class="matrix-cell" data-cell="high-low">
+              <h3>Важно • Несрочно</h3>
+              <ul></ul>
+            </div>
+            <div class="matrix-cell" data-cell="high-high">
+              <h3>Важно • Срочно</h3>
+              <ul></ul>
+            </div>
+            <div class="matrix-cell" data-cell="low-low">
+              <h3>Неважно • Несрочно</h3>
+              <ul></ul>
+            </div>
+            <div class="matrix-cell" data-cell="low-high">
+              <h3>Неважно • Срочно</h3>
+              <ul></ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel projects">
+        <h2>Проекты</h2>
+        <div id="project-list"></div>
+      </section>
+
+      <section class="panel sync">
+        <h2>Синхронизация с Google Таблицей</h2>
+        <div class="sync-controls">
+          <label>
+            URL веб‑приложения Google Apps Script
+            <input
+              type="url"
+              id="sync-url"
+              placeholder="https://script.google.com/macros/s/....../exec"
+            />
+          </label>
+          <div class="sync-buttons">
+            <button type="button" id="sync-pull">Загрузить из таблицы</button>
+            <button type="button" id="sync-push">Отправить в таблицу</button>
+          </div>
+          <p id="sync-status" class="sync-status" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section class="panel completed">
+        <h2>Выполненные задачи</h2>
+        <ul id="completed-list"></ul>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
