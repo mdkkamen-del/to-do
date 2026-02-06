@@ -98,6 +98,22 @@ ul {
   color: #334155;
 }
 
+.task-status {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.task-status select {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  font-size: 0.85rem;
+}
+
 .task small {
   color: #64748b;
 }

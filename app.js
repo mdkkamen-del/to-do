@@ -7,6 +7,8 @@ const matrixCells = document.querySelectorAll(".matrix-cell");
 const STORAGE_KEY = "todo-backlog-matrix-tasks";
 const tasks = [];
 
+const generateId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
 const saveTasks = () => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
 };
@@ -24,6 +26,7 @@ const loadTasks = () => {
           .filter((task) => task && typeof task.title === "string")
           .map((task) => ({
             ...task,
+            id: task.id || generateId(),
             status: task.status || "none",
           }))
       );
@@ -48,11 +51,20 @@ const statusLabel = (status) => {
 const renderTask = (task) => {
   const item = document.createElement("li");
   item.className = "task";
+  item.dataset.taskId = task.id;
   item.innerHTML = `
     <strong>${task.title}</strong>
     ${task.description ? `<span>${task.description}</span>` : ""}
     <small>Проект: ${task.project || "Без проекта"}</small>
     <small>Статус: ${statusLabel(task.status)}</small>
+    <label class="task-status">
+      Изменить статус
+      <select data-role="status-select">
+        <option value="none" ${task.status === "none" ? "selected" : ""}>Без статуса</option>
+        <option value="in-progress" ${task.status === "in-progress" ? "selected" : ""}>В работе</option>
+        <option value="done" ${task.status === "done" ? "selected" : ""}>Готово</option>
+      </select>
+    </label>
     <small>Важность: ${task.importance === "high" ? "Высокая" : "Низкая"}</small>
     <small>Срочность: ${task.urgency === "high" ? "Срочная" : "Несрочная"}</small>
   `;
@@ -123,6 +135,7 @@ form.addEventListener("submit", (event) => {
   event.preventDefault();
   const data = new FormData(form);
   const task = {
+    id: generateId(),
     title: data.get("title").trim(),
     description: data.get("description").trim(),
     project: data.get("project").trim(),
@@ -137,6 +150,27 @@ form.addEventListener("submit", (event) => {
 
   tasks.push(task);
   form.reset();
+  saveTasks();
+  renderAll();
+});
+
+document.addEventListener("change", (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLSelectElement)) {
+    return;
+  }
+  if (target.dataset.role !== "status-select") {
+    return;
+  }
+  const taskItem = target.closest(".task");
+  if (!taskItem) {
+    return;
+  }
+  const task = tasks.find((entry) => entry.id === taskItem.dataset.taskId);
+  if (!task) {
+    return;
+  }
+  task.status = target.value;
   saveTasks();
   renderAll();
 });
