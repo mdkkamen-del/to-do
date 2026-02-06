@@ -34,6 +34,7 @@ const renderTask = (task) => {
   item.className = "task";
   item.innerHTML = `
     <strong>${task.title}</strong>
+    ${task.description ? `<span>${task.description}</span>` : ""}
     <small>Проект: ${task.project || "Без проекта"}</small>
     <small>Важность: ${task.importance === "high" ? "Высокая" : "Низкая"}</small>
     <small>Срочность: ${task.urgency === "high" ? "Срочная" : "Несрочная"}</small>
@@ -96,6 +97,7 @@ form.addEventListener("submit", (event) => {
   const data = new FormData(form);
   const task = {
     title: data.get("title").trim(),
+    description: data.get("description").trim(),
     project: data.get("project").trim(),
     importance: data.get("importance"),
     urgency: data.get("urgency"),

@@ -93,6 +93,11 @@ ul {
   gap: 4px;
 }
 
+.task span {
+  font-size: 0.95rem;
+  color: #334155;
+}
+
 .task small {
   color: #64748b;
 }
