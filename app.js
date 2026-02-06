@@ -3,7 +3,29 @@ const backlogList = document.querySelector("#backlog-list");
 const projectList = document.querySelector("#project-list");
 const matrixCells = document.querySelectorAll(".matrix-cell");
 
+const STORAGE_KEY = "todo-backlog-matrix-tasks";
 const tasks = [];
+
+const saveTasks = () => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+};
+
+const loadTasks = () => {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) {
+    return;
+  }
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      tasks.push(
+        ...parsed.filter((task) => task && typeof task.title === "string")
+      );
+    }
+  } catch (error) {
+    console.warn("Failed to load tasks from storage", error);
+  }
+};
 
 const matrixKey = (importance, urgency) => `${importance}-${urgency}`;
 
@@ -85,7 +107,9 @@ form.addEventListener("submit", (event) => {
 
   tasks.push(task);
   form.reset();
+  saveTasks();
   renderAll();
 });
 
+loadTasks();
 renderAll();
