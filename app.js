@@ -3,8 +3,13 @@ const backlogList = document.querySelector("#backlog-list");
 const completedList = document.querySelector("#completed-list");
 const projectList = document.querySelector("#project-list");
 const matrixCells = document.querySelectorAll(".matrix-cell");
+const syncUrlInput = document.querySelector("#sync-url");
+const syncPullButton = document.querySelector("#sync-pull");
+const syncPushButton = document.querySelector("#sync-push");
+const syncStatus = document.querySelector("#sync-status");
 
 const STORAGE_KEY = "todo-backlog-matrix-tasks";
+const SYNC_URL_KEY = "todo-backlog-matrix-sync-url";
 const tasks = [];
 
 const generateId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -12,6 +17,37 @@ const generateId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 const saveTasks = () => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
 };
+
+const setStatusMessage = (message, isError = false) => {
+  if (!syncStatus) {
+    return;
+  }
+  syncStatus.textContent = message;
+  syncStatus.style.color = isError ? "#b91c1c" : "#475569";
+};
+
+const getSyncUrl = () => syncUrlInput?.value?.trim();
+
+const saveSyncUrl = (url) => {
+  if (url) {
+    localStorage.setItem(SYNC_URL_KEY, url);
+  } else {
+    localStorage.removeItem(SYNC_URL_KEY);
+  }
+};
+
+const normalizeTasks = (incoming) =>
+  incoming
+    .filter((task) => task && typeof task.title === "string")
+    .map((task) => ({
+      id: task.id || generateId(),
+      title: task.title,
+      description: task.description || "",
+      project: task.project || "",
+      importance: task.importance || "low",
+      urgency: task.urgency || "low",
+      status: task.status || "none",
+    }));
 
 const loadTasks = () => {
   const raw = localStorage.getItem(STORAGE_KEY);
@@ -21,15 +57,7 @@ const loadTasks = () => {
   try {
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) {
-      tasks.push(
-        ...parsed
-          .filter((task) => task && typeof task.title === "string")
-          .map((task) => ({
-            ...task,
-            id: task.id || generateId(),
-            status: task.status || "none",
-          }))
-      );
+      tasks.push(...normalizeTasks(parsed));
     }
   } catch (error) {
     console.warn("Failed to load tasks from storage", error);
@@ -131,6 +159,59 @@ const renderAll = () => {
   renderCompleted();
 };
 
+const replaceTasks = (nextTasks) => {
+  tasks.splice(0, tasks.length, ...normalizeTasks(nextTasks));
+};
+
+const pullFromSheet = async () => {
+  const url = getSyncUrl();
+  if (!url) {
+    setStatusMessage("Укажите URL веб‑приложения Google Apps Script.", true);
+    return;
+  }
+  setStatusMessage("Загрузка данных из таблицы...");
+  try {
+    const response = await fetch(url, { method: "GET" });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const payload = await response.json();
+    if (!Array.isArray(payload.tasks)) {
+      throw new Error("Неверный формат данных");
+    }
+    replaceTasks(payload.tasks);
+    saveTasks();
+    renderAll();
+    setStatusMessage("Данные успешно загружены.");
+  } catch (error) {
+    console.error(error);
+    setStatusMessage("Не удалось загрузить данные из таблицы.", true);
+  }
+};
+
+const pushToSheet = async () => {
+  const url = getSyncUrl();
+  if (!url) {
+    setStatusMessage("Укажите URL веб‑приложения Google Apps Script.", true);
+    return;
+  }
+  setStatusMessage("Отправка данных в таблицу...");
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tasks }),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    setStatusMessage("Данные успешно отправлены.");
+  } catch (error) {
+    console.error(error);
+    setStatusMessage("Не удалось отправить данные в таблицу.", true);
+  }
+};
+
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   const data = new FormData(form);
@@ -152,6 +233,18 @@ form.addEventListener("submit", (event) => {
   form.reset();
   saveTasks();
   renderAll();
+});
+
+syncUrlInput?.addEventListener("change", () => {
+  saveSyncUrl(getSyncUrl());
+});
+
+syncPullButton?.addEventListener("click", () => {
+  pullFromSheet();
+});
+
+syncPushButton?.addEventListener("click", () => {
+  pushToSheet();
 });
 
 document.addEventListener("change", (event) => {
@@ -176,4 +269,11 @@ document.addEventListener("change", (event) => {
 });
 
 loadTasks();
+const storedSyncUrl = localStorage.getItem(SYNC_URL_KEY);
+if (storedSyncUrl && syncUrlInput) {
+  syncUrlInput.value = storedSyncUrl;
+}
+if (storedSyncUrl) {
+  pullFromSheet();
+}
 renderAll();

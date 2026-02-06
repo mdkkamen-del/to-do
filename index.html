@@ -94,6 +94,25 @@
         <div id="project-list"></div>
       </section>
 
+      <section class="panel sync">
+        <h2>Синхронизация с Google Таблицей</h2>
+        <div class="sync-controls">
+          <label>
+            URL веб‑приложения Google Apps Script
+            <input
+              type="url"
+              id="sync-url"
+              placeholder="https://script.google.com/macros/s/....../exec"
+            />
+          </label>
+          <div class="sync-buttons">
+            <button type="button" id="sync-pull">Загрузить из таблицы</button>
+            <button type="button" id="sync-push">Отправить в таблицу</button>
+          </div>
+          <p id="sync-status" class="sync-status" aria-live="polite"></p>
+        </div>
+      </section>
+
       <section class="panel completed">
         <h2>Выполненные задачи</h2>
         <ul id="completed-list"></ul>
