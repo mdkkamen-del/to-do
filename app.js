@@ -163,6 +163,37 @@ const replaceTasks = (nextTasks) => {
   tasks.splice(0, tasks.length, ...normalizeTasks(nextTasks));
 };
 
+const loadJsonp = (url, timeoutMs = 10000) =>
+  new Promise((resolve, reject) => {
+    const callbackName = `sheetSyncCallback_${Date.now()}_${Math.random()
+      .toString(16)
+      .slice(2)}`;
+    const script = document.createElement("script");
+    const timeoutId = setTimeout(() => {
+      cleanup();
+      reject(new Error("Timeout"));
+    }, timeoutMs);
+
+    const cleanup = () => {
+      clearTimeout(timeoutId);
+      script.remove();
+      delete window[callbackName];
+    };
+
+    window[callbackName] = (payload) => {
+      cleanup();
+      resolve(payload);
+    };
+
+    const separator = url.includes("?") ? "&" : "?";
+    script.src = `${url}${separator}callback=${callbackName}`;
+    script.onerror = () => {
+      cleanup();
+      reject(new Error("Script load error"));
+    };
+    document.body.appendChild(script);
+  });
+
 const pullFromSheet = async () => {
   const url = getSyncUrl();
   if (!url) {
@@ -171,11 +202,7 @@ const pullFromSheet = async () => {
   }
   setStatusMessage("Загрузка данных из таблицы...");
   try {
-    const response = await fetch(url, { method: "GET" });
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    const payload = await response.json();
+    const payload = await loadJsonp(url);
     if (!Array.isArray(payload.tasks)) {
       throw new Error("Неверный формат данных");
     }
@@ -197,15 +224,13 @@ const pushToSheet = async () => {
   }
   setStatusMessage("Отправка данных в таблицу...");
   try {
-    const response = await fetch(url, {
+    await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({ tasks }),
     });
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    setStatusMessage("Данные успешно отправлены.");
+    setStatusMessage("Данные отправлены. Нажмите «Загрузить», чтобы проверить.");
   } catch (error) {
     console.error(error);
     setStatusMessage("Не удалось отправить данные в таблицу.", true);

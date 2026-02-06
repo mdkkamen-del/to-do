@@ -51,19 +51,19 @@
 ```javascript
 const SHEET_NAME = "Tasks";
 
-function withCors_(output) {
-  return output
-    .setMimeType(ContentService.MimeType.JSON)
-    .setHeader("Access-Control-Allow-Origin", "*")
-    .setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-    .setHeader("Access-Control-Allow-Headers", "Content-Type");
+function buildResponse_(data, callback) {
+  const json = JSON.stringify(data);
+  if (callback) {
+    return ContentService.createTextOutput(`${callback}(${json});`).setMimeType(
+      ContentService.MimeType.JAVASCRIPT
+    );
+  }
+  return ContentService.createTextOutput(json).setMimeType(
+    ContentService.MimeType.JSON
+  );
 }
 
-function doOptions() {
-  return withCors_(ContentService.createTextOutput(""));
-}
-
-function doGet() {
+function doGet(e) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
   const rows = sheet.getDataRange().getValues();
   const header = rows.shift() || [];
@@ -74,9 +74,7 @@ function doGet() {
     });
     return item;
   });
-  return withCors_(
-    ContentService.createTextOutput(JSON.stringify({ tasks }))
-  );
+  return buildResponse_({ tasks }, e && e.parameter && e.parameter.callback);
 }
 
 function doPost(e) {
@@ -89,9 +87,7 @@ function doPost(e) {
   tasks.forEach((task) => {
     sheet.appendRow(header.map((key) => task[key] || ""));
   });
-  return withCors_(
-    ContentService.createTextOutput(JSON.stringify({ ok: true }))
-  );
+  return buildResponse_({ ok: true }, e && e.parameter && e.parameter.callback);
 }
 ```
 
@@ -102,6 +98,10 @@ function doPost(e) {
 3. Доступ: **Все**.
 4. Скопируйте URL веб‑приложения.
 5. Если меняли код, разверните новую версию и используйте актуальный URL.
+
+> Примечание: Google Apps Script не поддерживает добавление CORS‑заголовков в `ContentService`.
+> Поэтому загрузка делается через JSONP (параметр `callback`), а отправка — обычным `POST`,
+> после которого можно нажать «Загрузить», чтобы убедиться, что данные обновились.
 
 ### 4) Подключите приложение
 
