@@ -97,9 +97,34 @@ ul {
   color: #64748b;
 }
 
+.matrix-axes {
+  position: relative;
+  padding: 12px 12px 12px 36px;
+}
+
+.axis-label {
+  position: absolute;
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.axis-y {
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) rotate(-90deg);
+  transform-origin: left top;
+}
+
+.axis-x {
+  right: 12px;
+  bottom: -6px;
+}
+
 .matrix-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
   gap: 16px;
 }
 

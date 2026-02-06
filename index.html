@@ -49,22 +49,26 @@
 
       <section class="panel matrix">
         <h2>Матрица Эйзенхауэра</h2>
-        <div class="matrix-grid">
-          <div class="matrix-cell" data-cell="high-high">
-            <h3>Важно • Срочно</h3>
-            <ul></ul>
-          </div>
-          <div class="matrix-cell" data-cell="high-low">
-            <h3>Важно • Несрочно</h3>
-            <ul></ul>
-          </div>
-          <div class="matrix-cell" data-cell="low-high">
-            <h3>Неважно • Срочно</h3>
-            <ul></ul>
-          </div>
-          <div class="matrix-cell" data-cell="low-low">
-            <h3>Неважно • Несрочно</h3>
-            <ul></ul>
+        <div class="matrix-axes">
+          <span class="axis-label axis-y">Важность ↑</span>
+          <span class="axis-label axis-x">Срочность →</span>
+          <div class="matrix-grid">
+            <div class="matrix-cell" data-cell="high-low">
+              <h3>Важно • Несрочно</h3>
+              <ul></ul>
+            </div>
+            <div class="matrix-cell" data-cell="high-high">
+              <h3>Важно • Срочно</h3>
+              <ul></ul>
+            </div>
+            <div class="matrix-cell" data-cell="low-low">
+              <h3>Неважно • Несрочно</h3>
+              <ul></ul>
+            </div>
+            <div class="matrix-cell" data-cell="low-high">
+              <h3>Неважно • Срочно</h3>
+              <ul></ul>
+            </div>
           </div>
         </div>
       </section>
