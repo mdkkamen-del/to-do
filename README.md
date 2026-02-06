@@ -51,10 +51,22 @@
 ```javascript
 const SHEET_NAME = "Tasks";
 
+function withCors_(output) {
+  return output
+    .setMimeType(ContentService.MimeType.JSON)
+    .setHeader("Access-Control-Allow-Origin", "*")
+    .setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+    .setHeader("Access-Control-Allow-Headers", "Content-Type");
+}
+
+function doOptions() {
+  return withCors_(ContentService.createTextOutput(""));
+}
+
 function doGet() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
   const rows = sheet.getDataRange().getValues();
-  const header = rows.shift();
+  const header = rows.shift() || [];
   const tasks = rows.map((row) => {
     const item = {};
     header.forEach((key, index) => {
@@ -62,9 +74,9 @@ function doGet() {
     });
     return item;
   });
-  return ContentService.createTextOutput(
-    JSON.stringify({ tasks })
-  ).setMimeType(ContentService.MimeType.JSON);
+  return withCors_(
+    ContentService.createTextOutput(JSON.stringify({ tasks }))
+  );
 }
 
 function doPost(e) {
@@ -77,9 +89,9 @@ function doPost(e) {
   tasks.forEach((task) => {
     sheet.appendRow(header.map((key) => task[key] || ""));
   });
-  return ContentService.createTextOutput(
-    JSON.stringify({ ok: true })
-  ).setMimeType(ContentService.MimeType.JSON);
+  return withCors_(
+    ContentService.createTextOutput(JSON.stringify({ ok: true }))
+  );
 }
 ```
 
@@ -89,6 +101,7 @@ function doPost(e) {
 2. Тип: **Веб‑приложение**.
 3. Доступ: **Все**.
 4. Скопируйте URL веб‑приложения.
+5. Если меняли код, разверните новую версию и используйте актуальный URL.
 
 ### 4) Подключите приложение
 
