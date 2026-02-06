@@ -1,0 +1,91 @@
+const form = document.querySelector("#task-form");
+const backlogList = document.querySelector("#backlog-list");
+const projectList = document.querySelector("#project-list");
+const matrixCells = document.querySelectorAll(".matrix-cell");
+
+const tasks = [];
+
+const matrixKey = (importance, urgency) => `${importance}-${urgency}`;
+
+const renderTask = (task) => {
+  const item = document.createElement("li");
+  item.className = "task";
+  item.innerHTML = `
+    <strong>${task.title}</strong>
+    <small>Проект: ${task.project || "Без проекта"}</small>
+    <small>Важность: ${task.importance === "high" ? "Высокая" : "Низкая"}</small>
+    <small>Срочность: ${task.urgency === "high" ? "Срочная" : "Несрочная"}</small>
+  `;
+  return item;
+};
+
+const renderBacklog = () => {
+  backlogList.innerHTML = "";
+  tasks.forEach((task) => backlogList.appendChild(renderTask(task)));
+};
+
+const renderMatrix = () => {
+  matrixCells.forEach((cell) => {
+    cell.querySelector("ul").innerHTML = "";
+  });
+  tasks.forEach((task) => {
+    const cell = document.querySelector(`[data-cell="${matrixKey(task.importance, task.urgency)}"] ul`);
+    if (cell) {
+      cell.appendChild(renderTask(task));
+    }
+  });
+};
+
+const renderProjects = () => {
+  const grouped = tasks.reduce((acc, task) => {
+    const key = task.project?.trim() || "Без проекта";
+    if (!acc[key]) {
+      acc[key] = [];
+    }
+    acc[key].push(task);
+    return acc;
+  }, {});
+
+  projectList.innerHTML = "";
+  const grid = document.createElement("div");
+  grid.className = "projects-grid";
+
+  Object.entries(grouped).forEach(([project, projectTasks]) => {
+    const card = document.createElement("div");
+    card.className = "project-card";
+    card.innerHTML = `<h3>${project}</h3>`;
+    const list = document.createElement("ul");
+    projectTasks.forEach((task) => list.appendChild(renderTask(task)));
+    card.appendChild(list);
+    grid.appendChild(card);
+  });
+
+  projectList.appendChild(grid);
+};
+
+const renderAll = () => {
+  renderBacklog();
+  renderMatrix();
+  renderProjects();
+};
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const data = new FormData(form);
+  const task = {
+    title: data.get("title").trim(),
+    project: data.get("project").trim(),
+    importance: data.get("importance"),
+    urgency: data.get("urgency"),
+  };
+
+  if (!task.title) {
+    return;
+  }
+
+  tasks.push(task);
+  form.reset();
+  renderAll();
+});
+
+renderAll();
